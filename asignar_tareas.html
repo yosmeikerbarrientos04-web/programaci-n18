@@ -1,0 +1,28 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<link rel="stylesheet" href="{% static 'ventas/css/estilos_tareas.css' %}">
+
+<div class="container mt-5" style="max-width: 600px;">
+    <div class="form-container">
+        <h3 class="fw-bold mb-1">Gestión de Actividades</h3>
+        <p class="text-muted small mb-4">Proyecto actual: <strong>{{ proyecto.nombre }}</strong></p>
+        
+        <form method="POST">
+            {% csrf_token %}
+            
+            {{ from_t.as_p }}
+
+            <div class="d-flex gap-2 mt-4">
+                <button type="submit" class="btn-registrar">
+                    Registrar Tarea
+                </button>
+                <a href="{% url 'home' %}" class="btn btn-outline-secondary">
+                    Volver al tablero
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
