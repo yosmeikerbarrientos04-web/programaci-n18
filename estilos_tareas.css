@@ -1,0 +1,44 @@
+/* ventas/static/css/estilos_tareas.css */
+
+/* Contenedor principal */
+.form-container {
+    background-color: #ffffff;
+    padding: 2rem;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    border-top: 5px solid #ff6600; /* Detalle naranja Movilnet */
+}
+
+/* Estilo de las etiquetas del formulario de Django */
+form p label {
+    font-weight: 600;
+    color: #444;
+    display: block;
+    margin-bottom: 5px;
+}
+
+/* Estilo de los campos de texto y selects */
+form p input, form p textarea, form p select {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    margin-bottom: 15px;
+    display: block;
+}
+
+/* Botón personalizado */
+.btn-registrar {
+    background-color: #ff6600;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 6px;
+    font-weight: bold;
+    transition: 0.3s;
+}
+
+.btn-registrar:hover {
+    background-color: #e65c00;
+    color: white;
+}
