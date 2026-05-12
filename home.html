@@ -1,0 +1,190 @@
+{% extends 'base.html' %}
+{% block content %}
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mi Movilnet - Panel de Gerente</title>
+    <link rel="stylesheet" href="{% static 'ventas/css/estructura.css' %}">
+    <style>
+        :root {
+            --movilnet-orange: #ff6600;
+            --movilnet-gray: #333;
+            --bg-light: #f4f7f6;
+        }
+
+        body { background-color: var(--bg-light); font-family: 'Segoe UI', sans-serif; margin: 0; }
+
+        .dashboard-container { max-width: 1100px; margin: 40px auto; padding: 20px; }
+
+        /* HEADER */
+        .welcome-header {
+            background: white; padding: 25px; border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 30px;
+        }
+        .welcome-text h1 span { color: var(--movilnet-orange); }
+
+        /* SECCIONES PRINCIPALES */
+        .section-box {
+            background: white; padding: 25px; border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05); margin-bottom: 30px;
+        }
+
+        .titulo-seccion { 
+            border-bottom: 2px solid var(--movilnet-orange); 
+            padding-bottom: 10px; margin-bottom: 20px; color: var(--movilnet-gray);
+        }
+
+        /* FORMULARIOS */
+        .inputs_contenedor { display: flex; gap: 15px; margin-bottom: 15px; flex-wrap: wrap; }
+        .inputs_contenedor input { 
+            flex: 1; padding: 12px; border: 2px solid #ddd; border-radius: 8px; outline: none; 
+        }
+        .inputs_contenedor input:focus { border-color: var(--movilnet-orange); }
+
+        /* LISTADO DE PROYECTOS (ESTILO ACORDEÓN) */
+        .proyecto-item {
+            border: 1px solid #eee; border-radius: 10px; margin-bottom: 15px;
+            overflow: hidden; transition: 0.3s;
+        }
+
+        .proyecto-header {
+            background: #fff; padding: 15px 20px; display: flex;
+            justify-content: space-between; align-items: center;
+            cursor: pointer; border-left: 6px solid var(--movilnet-orange);
+        }
+
+        .proyecto-header:hover { background: #f9f9f9; }
+
+        .proyecto-info h4 { margin: 0; color: var(--movilnet-gray); }
+        .proyecto-info p { margin: 5px 0 0; font-size: 0.85rem; color: #777; }
+
+        /* SUBTAREAS (OCULTAS POR DEFECTO) */
+        .subtareas-container {
+            display: none; background: #fafafa; padding: 20px;
+            border-top: 1px solid #eee;
+        }
+
+        .tabla-tareas { width: 100%; border-collapse: collapse; background: white; border-radius: 8px; overflow: hidden; }
+        .tabla-tareas th { background: #f0f0f0; padding: 12px; text-align: left; font-size: 0.8rem; color: #666; }
+        .tabla-tareas td { padding: 12px; border-bottom: 1px solid #eee; font-size: 0.9rem; }
+
+        /* BADGES DE ESTADO */
+        .status { padding: 4px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: bold; }
+        .status-proceso { background: #e3f2fd; color: #1976d2; }
+        .status-revision { background: #fff3e0; color: #f57c00; }
+        .status-completado { background: #e8f5e9; color: #2e7d32; }
+
+        /* BOTONES */
+        .btn { padding: 10px 20px; border-radius: 8px; border: none; cursor: pointer; font-weight: bold; text-decoration: none; display: inline-block; }
+        .btn-orange { background: var(--movilnet-orange); color: white; }
+        .btn-outline { border: 1px solid #ddd; color: #666; font-size: 0.8rem; }
+    </style>
+</head>
+<body>
+
+    <div class="dashboard-container">
+        
+        <header class="welcome-header">
+            <div class="welcome-text">
+                <h1>Panel <span>Gerente</span></h1>
+                <p>Gestión de Proyectos y Equipos de Desarrollo</p>
+            </div>
+            <a href="{% url 'logout' %}" class="btn btn-outline" style="color: #d9534f;">Cerrar Sesión</a>
+        </header>
+
+        <div class="section-box">
+            <h3 class="titulo-seccion">Crear Nuevo Proyecto</h3>
+            <form action="{% url 'crear_proyecto' %}" method="POST">
+                {% csrf_token %}
+                <div class="inputs_contenedor">
+                    {{ form.nombre }}
+                    {{ form.descripcion }}
+                </div>
+                <button type="submit" class="btn btn-orange">Registrar Proyecto</button>
+            </form>
+        </div>
+
+        <div class="section-box">
+            <h3 class="titulo-seccion">Proyectos Activos (Clic para ver tareas)</h3>
+            
+            <div class="proyectos-lista">
+                {% for proyecto in proyectos %}
+                <div class="proyecto-item">
+                    <div class="proyecto-header" onclick="toggleTareas('tareas-{{ proyecto.id }}')">
+                        <div class="proyecto-info">
+                            <h4>{{ proyecto.nombre }}</h4>
+                            <p>{{ proyecto.descripcion|truncatechars:60 }}</p>
+                        </div>
+                        <div style="display: flex; gap: 10px; align-items: center;">
+                            <span class="status status-proceso">{{ proyecto.get_estado_display }}</span>
+                            <span style="font-size: 1.2rem;">▼</span>
+                        </div>
+                    </div>
+
+                    <div id="tareas-{{ proyecto.id }}" class="subtareas-container">
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 15px;">
+                            <h5 style="margin: 0;">Desarrolladores y Tareas Asignadas</h5>
+                            <a href="{% url 'editar_proyecto' proyecto.pk %}" class="btn btn-outline">Gestionar Proyecto</a>
+                        </div>
+                        
+                        <table class="tabla-tareas">
+                            <thead>
+                                <tr>
+                                    <th>Tarea</th>
+                                    <th>Desarrollador</th>
+                                    <th>Estatus</th>
+                                    <th>Entrega</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for tarea in proyecto.tareas.all %}
+                                <tr>
+                                    <td>{{ tarea.nombre }}</td>
+                                    <td><strong>{{ tarea.desarrollador.first_name }}</strong></td>
+                                    <td><span class="status status-{{ tarea.estatus_clase }}">{{ tarea.estatus }}</span></td>
+                                    <td>{{ tarea.fecha_entrega }}</td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="4" style="text-align: center; color: #999;">No hay tareas asignadas aún.</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+
+    <script>
+        // Función para desplegar/contraer las tareas
+        function toggleTareas(id) {
+            const container = document.getElementById(id);
+            const isVisible = container.style.display === "block";
+            
+            // Opcional: Cerrar otros antes de abrir este
+            document.querySelectorAll('.subtareas-container').forEach(el => el.style.display = 'none');
+            
+            container.style.display = isVisible ? "none" : "block";
+        }
+
+        // Placeholders dinámicos
+        document.addEventListener("DOMContentLoaded", function() {
+            const inputs = document.querySelectorAll('.inputs_contenedor input');
+            if(inputs.length >= 2) {
+                inputs[0].placeholder = "Nombre del Proyecto (Ej: App Ventas)";
+                inputs[1].placeholder = "Breve descripción de objetivos...";
+            }
+        });
+    </script>
+    {% endblock %}
+</body>
+</html>
