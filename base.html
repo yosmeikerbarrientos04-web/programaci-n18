@@ -6,8 +6,8 @@
     <title>proyect</title>
 </head>
 <body>
-    <main>
-    {% if messages %}
+    <main> # borrar todo lo que esta en el nav
+    {% if messages %} #agregar nuevo
 <div class="container mt-4">
     {% for message in messages %}
     <div class="alert alert-success alert-dismissible fade show border-0 shadow-sm" role="alert" style="background-color: #d1e7dd; color: #0f5132;">
@@ -16,7 +16,7 @@
     </div>
     {% endfor %}
 </div>
-{% endif %}
+{% endif %} # hasta aqui
     {% block content %}
     {% endblock %}
     </main>
